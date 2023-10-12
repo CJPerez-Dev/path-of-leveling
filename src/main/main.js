@@ -49,7 +49,7 @@ app.on('activate', () => {
 });
 
 // Handle getting the 'Acts' data
-ipcMain.handle('getActs', (event) => {
+ipcMain.handle('getActs', () => {
     const acts = store.get('Acts');
     return acts;
   });
