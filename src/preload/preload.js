@@ -3,7 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('api', {
   getActs: () => ipcRenderer.invoke('getActs'),
 
-  moveExerciseToFinished: (actIndex, exercise) => ipcRenderer.invoke('moveToFinished', actIndex, exercise),
+  moveStepToFinished: (actIndex, step) => ipcRenderer.invoke('moveToFinished', actIndex, step),
 
-  moveExerciseToUnfinished: (actIndex, exercise) => ipcRenderer.invoke('moveToUnfinished', actIndex, exercise),
+  moveStepToUnfinished: (actIndex, step) => ipcRenderer.invoke('moveToUnfinished', actIndex, step),
 });

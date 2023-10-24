@@ -6,6 +6,8 @@ const Store = require('electron-store');
 const store = new Store();
 let mainWindow;
 
+store.clear();
+
 // Create a function to initialize the Electron Window
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -24,11 +26,10 @@ function createWindow() {
   mainWindow.on('closed', () => mainWindow = null);
 }
 
-// Create and manage the initial data structure (if not already present)
 if (!store.has('Acts')) {
   const initialActs = Array.from({ length: 10 }, (_, i) => ({
     name: `Act ${i + 1}`,
-    unfinishedSteps: ['Ex1', 'Ex2', 'Ex3'],
+    unfinishedSteps: Array.from({ length: 10 }, (_, j) => `${(j + 1).toString().padStart(2, '0')}: Example Step`),
     finishedSteps: [],
   }));
   store.set('Acts', initialActs);
@@ -50,38 +51,38 @@ app.on('activate', () => {
 
 // Handle getting the 'Acts' data
 ipcMain.handle('getActs', () => {
-    const acts = store.get('Acts');
-    return acts;
-  });
-  
-// Handle moving a step from unfinishedSteps to finishedSteps
-ipcMain.handle('moveToFinished', (event, actIndex, exercise) => {
-const acts = store.get('Acts');
-if (actIndex >= 0 && actIndex < acts.length) {
-    const act = acts[actIndex];
-    const unfinishedIndex = act.unfinishedSteps.indexOf(exercise);
-    if (unfinishedIndex !== -1) {
-    act.unfinishedSteps.splice(unfinishedIndex, 1);
-    act.finishedSteps.push(exercise);
-    store.set('Acts', acts);
-    return true; // Success
-    }
-}
-return false; // Step not found
+  const acts = store.get('Acts');
+  return acts;
 });
-  
-// Handle moving a step from finishedSteps to unfinishedSteps
-ipcMain.handle('moveToUnfinished', (event, actIndex, exercise) => {
-const acts = store.get('Acts');
-if (actIndex >= 0 && actIndex < acts.length) {
+
+// Handle moving a step from unfinishedSteps to finishedSteps
+ipcMain.handle('moveToFinished', (event, actIndex, step) => {
+  const acts = store.get('Acts');
+  if (actIndex >= 0 && actIndex < acts.length) {
     const act = acts[actIndex];
-    const finishedIndex = act.finishedSteps.indexOf(exercise);
-    if (finishedIndex !== -1) {
-    act.finishedSteps.splice(finishedIndex, 1);
-    act.unfinishedSteps.push(exercise);
-    store.set('Acts', acts);
-    return true; // Success
+    const unfinishedIndex = act.unfinishedSteps.indexOf(step);
+    if (unfinishedIndex !== -1) {
+      act.unfinishedSteps.splice(unfinishedIndex, 1);
+      act.finishedSteps.push(step);
+      store.set('Acts', acts);
+      return true;
     }
-}
-return false; // Step not found
+  }
+  return false;
+});
+
+// Handle moving a step from finishedSteps to unfinishedSteps
+ipcMain.handle('moveToUnfinished', (event, actIndex, step) => {
+  const acts = store.get('Acts');
+  if (actIndex >= 0 && actIndex < acts.length) {
+    const act = acts[actIndex];
+    const finishedIndex = act.finishedSteps.indexOf(step);
+    if (finishedIndex !== -1) {
+      act.finishedSteps.splice(finishedIndex, 1);
+      act.unfinishedSteps.push(step);
+      store.set('Acts', acts);
+      return true;
+    }
+  }
+  return false;
 });
