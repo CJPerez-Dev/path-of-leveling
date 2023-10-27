@@ -1,0 +1,9 @@
+.navbar-button {
+    display: flex;
+    align-items: center;
+    font-size: 14px; 
+    font-weight: bold; 
+    height: 30px; 
+    line-height: 30px; 
+  }
+  

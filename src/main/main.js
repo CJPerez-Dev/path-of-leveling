@@ -6,8 +6,6 @@ const Store = require('electron-store');
 const store = new Store();
 let mainWindow;
 
-store.clear();
-
 // Create a function to initialize the Electron Window
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -19,9 +17,11 @@ function createWindow() {
         : path.join(app.getAppPath(), './out/preload/preload.js'),
       worldSafeExecuteJavaScript: true,
       contextIsolation: true,
+      devTools: false,
     },
   });
 
+  mainWindow.setMenuBarVisibility(false);
   mainWindow.loadURL('http://localhost:5173');
   mainWindow.on('closed', () => mainWindow = null);
 }
