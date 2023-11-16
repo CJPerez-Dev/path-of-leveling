@@ -28,21 +28,16 @@ function RouteList() {
     }));
   };
 
-  const toggleStepFinishedState = async (actIndex, step) => {
+  const toggleStepFinishState = async (actIndex, stepIndex) => {
     const updatedActsData = [...actsData];
     const act = updatedActsData[actIndex];
+    const step = act.steps[stepIndex];
 
-    if (act.unfinishedSteps.includes(step)) {
-      act.unfinishedSteps = act.unfinishedSteps.filter((item) => item !== step);
-      act.finishedSteps.push(step);
-    } else if (act.finishedSteps.includes(step)) {
-      act.finishedSteps = act.finishedSteps.filter((item) => item !== step);
-      act.unfinishedSteps.push(step);
-    }
+    step.finished = !step.finished;
 
     setActsData(updatedActsData);
 
-    const success = await window.api.moveStepToFinished(actIndex, step);
+    const success = await window.api.toggleStepFinishState(actIndex, stepIndex, step.finished);
     if (!success) {
       console.error('Error updating step:', step);
     }
@@ -53,12 +48,18 @@ function RouteList() {
   }, []);
 
   // Function to sort steps based on their numerical prefixes
-  const sortSteps = (steps) => {
-    return steps.sort((a, b) => {
-      const aNumber = parseInt(a.match(/^\d+/));
-      const bNumber = parseInt(b.match(/^\d+/));
-      return aNumber - bNumber;
-    });
+  const sortSteps = (act) => {
+    const steps = act.steps;
+
+    if (Array.isArray(steps)) {
+      return steps.slice().sort((a, b) => {
+        const aNumber = parseInt(a.name.match(/^\d+/));
+        const bNumber = parseInt(b.name.match(/^\d+/));
+        return aNumber - bNumber;
+      });
+    } else {
+      return [];
+    }
   };
 
   return (
@@ -70,28 +71,19 @@ function RouteList() {
             {actsData.map((act, actIndex) => (
               <React.Fragment key={actIndex}>
                 <ListItemButton onClick={() => toggleActOpenState(actIndex)}>
-                  <ListItemText primary={act.name} />
+                  <ListItemText primary={`Act ${act.actNumber}`} />
                   {actOpenState[actIndex] ? <ExpandLess /> : <ExpandMore />}
                 </ListItemButton>
                 <Collapse in={actOpenState[actIndex]} timeout="auto" unmountOnExit>
                   <List component="div" disablePadding>
-                    {sortSteps(act.finishedSteps).map((step, stepIndex) => (
+                    {sortSteps(act).map((step, stepIndex) => (
                       <ListItemButton
                         key={stepIndex}
                         sx={{ pl: 4 }}
-                        onClick={() => toggleStepFinishedState(actIndex, step)}
-                        style={{ color: 'lightgray', textDecoration: 'line-through' }}
+                        onClick={() => toggleStepFinishState(actIndex, stepIndex)}
+                        style={{ color: 'lightgray', textDecoration: step.finished ? 'line-through' : 'none' }}
                       >
-                        <ListItemText primary={step} />
-                      </ListItemButton>
-                    ))}
-                    {sortSteps(act.unfinishedSteps).map((step, stepIndex) => (
-                      <ListItemButton
-                        key={stepIndex}
-                        sx={{ pl: 4 }}
-                        onClick={() => toggleStepFinishedState(actIndex, step)}
-                      >
-                        <ListItemText primary={step} />
+                        <ListItemText primary={step.name} />
                       </ListItemButton>
                     ))}
                   </List>
